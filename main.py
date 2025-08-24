@@ -116,6 +116,9 @@ async def main():
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     dp = Dispatcher()
 
+    # Pass the bot instance to the dispatcher to make it available in handlers
+    dp["bot"] = bot
+
     # Register handlers for private chats only
     dp.message.register(start_handler, CommandStart(), F.chat.type == "private")
     dp.message.register(help_handler, Command("help"), F.chat.type == "private")
