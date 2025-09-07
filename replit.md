@@ -61,3 +61,4 @@ Preferred communication style: Simple, everyday language.
 - **Logging**: Built-in Python logging for debugging and monitoring
 - **Type Hints**: Python typing module for better code maintainability
 - **Asyncio**: Python's asynchronous I/O framework for concurrent operations
+- **Testing**: To run test run command: pytest -q
