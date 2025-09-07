@@ -15,6 +15,9 @@ class Config:
     # Optional configurations with defaults
     CACHE_SIZE = int(os.getenv("CACHE_SIZE", "1000"))  # Max messages per chat
     RATE_LIMIT_SECONDS = int(os.getenv("RATE_LIMIT_SECONDS", "10"))  # Seconds between commands
+    DB_PATH = os.getenv("DB_PATH", "messages.db")  # SQLite database file path
+    # Disable Telegram markdown formatting and send plain text only
+    PLAIN_TEXT_OUTPUT = os.getenv("PLAIN_TEXT_OUTPUT", "false").lower() in {"1", "true", "yes", "on"}
     
     # Authorized users (comma-separated list of Telegram user IDs)
     AUTHORIZED_USERS = [int(x.strip()) for x in os.getenv("AUTHORIZED_USERS", "").split(",") if x.strip()]

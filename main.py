@@ -81,8 +81,23 @@ def escape_markdown_v2(text: str) -> str:
     return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
 
 
+def strip_markdown_formatting(text: str) -> str:
+    """Remove common Telegram Markdown/MarkdownV2 formatting to produce plain text."""
+    if not text:
+        return text
+    # Unescape MarkdownV2 escapes
+    text = re.sub(r"\\([_*\[\]()~`>#+\-=|{}.!])", r"\1", text)
+    # Remove bold/italic/underline/strikethrough/code markers
+    for token in ("**", "__", "`", "*", "_"):
+        text = text.replace(token, "")
+    return text
+
+
 async def safe_send_message(bot_or_message, chat_id: int = None, text: str = "", **kwargs):
     """Safely send a message, falling back to plain text if markdown fails"""
+    if Config.PLAIN_TEXT_OUTPUT:
+        kwargs.pop('parse_mode', None)
+        text = strip_markdown_formatting(text)
     try:
         if hasattr(bot_or_message, 'send_message'):  # It's a bot instance
             return await bot_or_message.send_message(chat_id=chat_id, text=text, **kwargs)
@@ -92,6 +107,7 @@ async def safe_send_message(bot_or_message, chat_id: int = None, text: str = "",
         if "can't parse entities" in str(e).lower():
             # Remove parse_mode and try again with plain text
             kwargs.pop('parse_mode', None)
+            text = strip_markdown_formatting(text)
             if hasattr(bot_or_message, 'send_message'):
                 return await bot_or_message.send_message(chat_id=chat_id, text=text, **kwargs)
             else:
@@ -102,6 +118,9 @@ async def safe_send_message(bot_or_message, chat_id: int = None, text: str = "",
 
 async def safe_edit_message(message, text: str, **kwargs):
     """Safely edit a message, handling cases where message might not exist"""
+    if Config.PLAIN_TEXT_OUTPUT:
+        kwargs.pop('parse_mode', None)
+        text = strip_markdown_formatting(text)
     try:
         return await message.edit_text(text=text, **kwargs)
     except TelegramBadRequest as e:
@@ -111,6 +130,7 @@ async def safe_edit_message(message, text: str, **kwargs):
         elif "can't parse entities" in str(e).lower():
             # Remove parse_mode and try again with plain text
             kwargs.pop('parse_mode', None)
+            text = strip_markdown_formatting(text)
             return await message.edit_text(text=text, **kwargs)
         else:
             raise
